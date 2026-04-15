@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LifeScope MVP</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">AI Life Strategy Mirror</p>
+        <h1>LifeScope</h1>
+      </div>
+      <div class="status-strip" aria-label="MVP 状态">
+        <span>3 条路径</span>
+        <span>证据层</span>
+        <span id="backend-status">检测服务中</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <form class="intake-panel" id="life-form">
+        <section class="landing-promise">
+          <p class="eyebrow">Future Reading + Decision Rehearsal</p>
+          <h2>把一次人生选择拆成几条可比较的未来路径。</h2>
+          <p>
+            不是算命，也不是单一路径预测。你控制输入和假设，系统给出多个分支、可信度、缺失信息和下一步行动。
+          </p>
+          <div class="promise-grid">
+            <span>多路径</span>
+            <span>可改假设</span>
+            <span>非命运判断</span>
+          </div>
+        </section>
+
+        <ol class="stepper" aria-label="生成流程">
+          <li class="active" data-step="intake">1 输入背景</li>
+          <li data-step="review">2 确认画像</li>
+          <li data-step="result">3 生成路径</li>
+        </ol>
+
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Intake</p>
+            <h2>上传背景与兴趣</h2>
+          </div>
+          <button class="icon-button" type="button" id="load-sample" title="填入样例">
+            <span aria-hidden="true">↺</span>
+            <span class="sr-only">填入样例</span>
+          </button>
+        </div>
+
+        <div class="form-grid two">
+          <label>
+            <span>称呼</span>
+            <input name="name" autocomplete="name" value="Alex" />
+          </label>
+          <label>
+            <span>年龄</span>
+            <input name="age" type="number" min="15" max="100" value="29" />
+          </label>
+        </div>
+
+        <div class="form-grid two">
+          <label>
+            <span>当前城市</span>
+            <input name="location" value="上海" />
+          </label>
+          <label>
+            <span>当前身份</span>
+            <input name="career" value="AI 产品经理" />
+          </label>
+        </div>
+
+        <label class="file-drop">
+          <input type="file" id="profile-file" accept=".txt,.md,.csv,.json" />
+          <span class="file-title">选择文本文件</span>
+          <span id="file-name">可上传简历、自述、兴趣清单或人生困惑</span>
+        </label>
+
+        <label>
+          <span>背景自述</span>
+          <textarea name="background" rows="7">过去几年主要在互联网和 AI 应用方向工作，做过增长、产品策略和模型体验评估。现在想判断未来 3 到 10 年应该继续走大厂产品路线、去海外读研，还是加入早期 AI 创业团队。比较在意长期成长、收入上限、生活稳定性和亲密关系。</textarea>
+        </label>
+
+        <label>
+          <span>兴趣与价值观</span>
+          <textarea name="interests" rows="4">喜欢 AI 产品、写作、心理学、城市生活、长期主义。希望未来不是只有工作，也要有关系、健康、创作和自由度。</textarea>
+        </label>
+
+        <label>
+          <span>这次最想推演的问题</span>
+          <input name="question" value="如果我未来两年在国内 AI 创业和出国读研之间选择，十年后会怎样？" />
+        </label>
+
+        <label>
+          <span>现实约束</span>
+          <textarea name="constraints" rows="3">预算有限；不想长期 80 小时工作；希望 3 年内关系和城市生活更稳定。</textarea>
+        </label>
+
+        <details class="assumptions" open>
+          <summary>高级假设</summary>
+          <fieldset>
+            <legend>推演主题</legend>
+            <div class="segmented" role="group" aria-label="推演主题">
+              <label><input type="radio" name="focus" value="career" checked />职业</label>
+              <label><input type="radio" name="focus" value="city" />城市</label>
+              <label><input type="radio" name="focus" value="relationship" />关系</label>
+              <label><input type="radio" name="focus" value="whole" />综合</label>
+            </div>
+          </fieldset>
+
+          <div class="slider-stack">
+            <label>
+              <span>风险承受 <output id="risk-value">6</output></span>
+              <input name="risk" type="range" min="0" max="10" value="6" />
+            </label>
+            <label>
+              <span>生活稳定优先级 <output id="balance-value">8</output></span>
+              <input name="balance" type="range" min="0" max="10" value="8" />
+            </label>
+            <label>
+              <span>迁移意愿 <output id="mobility-value">7</output></span>
+              <input name="mobility" type="range" min="0" max="10" value="7" />
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>What-if</legend>
+            <div class="checks">
+              <label><input type="checkbox" name="whatif" value="overseas" checked />出国读研</label>
+              <label><input type="checkbox" name="whatif" value="startup" checked />加入创业团队</label>
+              <label><input type="checkbox" name="whatif" value="stable" />稳定现金流</label>
+              <label><input type="checkbox" name="whatif" value="family" />优先亲密关系</label>
+            </div>
+          </fieldset>
+        </details>
+
+        <div class="consent-row">
+          <label><input type="checkbox" name="includeSensitive" />纳入关系、家庭、健康等高敏生活信息</label>
+          <label><input type="checkbox" name="localOnly" checked />后端落盘时隐藏原始长文本</label>
+        </div>
+        <p class="privacy-note">
+          可以不提供高敏信息，也能生成第一版结果。直接打开文件时内容只在浏览器内处理；启动本地服务时，后端只保存脱敏结果快照。
+        </p>
+
+        <button class="primary-action" type="submit">
+          <span aria-hidden="true">→</span>
+          确认画像
+        </button>
+      </form>
+
+      <section class="result-panel" id="result-panel" aria-live="polite">
+        <section class="review-panel" id="review-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Profile Review</p>
+              <h3>先确认系统理解了什么</h3>
+            </div>
+            <button class="secondary-action" type="button" id="generate-button">生成路径</button>
+          </div>
+          <div class="review-grid">
+            <div>
+              <h4>我们理解你是</h4>
+              <p id="profile-summary">填写背景后会在这里生成画像摘要。</p>
+            </div>
+            <div>
+              <h4>本次问题</h4>
+              <p id="profile-question">这次最想推演的问题会在这里展示。</p>
+            </div>
+            <div>
+              <h4>还缺什么</h4>
+              <ul id="profile-missing"></ul>
+            </div>
+          </div>
+          <div class="source-tags">
+            <span>来自你填写</span>
+            <span>来自上传文本</span>
+            <span>系统只做保守推断</span>
+          </div>
+        </section>
+
+        <section class="loading-panel" id="loading-panel" hidden>
+          <p class="eyebrow">Generating</p>
+          <h2 id="loading-stage">解析画像</h2>
+          <div class="loading-steps">
+            <span>解析画像</span>
+            <span>构建分支</span>
+            <span>检查可信度</span>
+            <span>组装结果</span>
+          </div>
+        </section>
+
+        <div class="result-hero">
+          <div>
+            <p class="eyebrow">One-Screen Answer</p>
+            <h2 id="result-title">Alex 的三条可能人生</h2>
+            <p id="result-summary">路径会基于你提供的背景、兴趣、约束和 what-if 权重重新生成。</p>
+          </div>
+          <div class="confidence-gauge">
+            <span id="confidence-value">72%</span>
+            <small>当前置信度</small>
+          </div>
+        </div>
+
+        <div class="branch-grid" id="branch-grid"></div>
+
+        <section class="result-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Path Compare</p>
+              <h3>同一组轴对比三条路径</h3>
+            </div>
+            <p class="metric-note">Probability 是情景权重；confidence 是当前资料是否足以支撑判断。</p>
+          </div>
+          <div class="compare-grid" id="compare-grid"></div>
+        </section>
+
+        <section class="result-section">
+          <div class="section-heading">
+            <p class="eyebrow">Path Map</p>
+            <h3>未来十年的关键分叉</h3>
+          </div>
+          <div class="timeline" id="timeline"></div>
+        </section>
+
+        <section class="result-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Trust Surface</p>
+              <h3>这次判断使用了什么</h3>
+            </div>
+            <p class="metric-note">缺失信息会改变置信度，有时也会改变路径排序。</p>
+          </div>
+          <div class="trust-grid">
+            <div>
+              <h4>用了什么</h4>
+              <ul id="evidence-list"></ul>
+            </div>
+            <div>
+              <h4>仍然缺失</h4>
+              <ul id="missing-list"></ul>
+            </div>
+            <div>
+              <h4>下一次重跑</h4>
+              <ul id="rerun-list"></ul>
+            </div>
+          </div>
+          <p class="privacy-note">这不是医疗、法律、投资或心理诊断建议。</p>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
