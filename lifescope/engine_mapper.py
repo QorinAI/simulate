@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List
 
-from lifescope.core import WHAT_IF_LABELS, normalize_payload, text_words
+from lifescope.core import WHAT_IF_LABELS, clean_text, normalize_payload, text_words
 
 
 def risk_tolerance(value: int) -> str:
@@ -87,6 +88,12 @@ def evidence_references(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
 def to_simulation_request_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     profile = normalize_payload(payload)
     priorities = text_words(profile["interests"])[:8] or ["长期成长", "生活稳定", "选择权"]
+    preferred_language = clean_text(
+        payload.get("preferred_language"),
+        os.getenv("LIFESCOPE_SIMULATE_LIFE_LANGUAGE", "en"),
+    ).lower()
+    if preferred_language not in ("en", "zh"):
+        preferred_language = "en"
     return {
         "person": {
             "name": profile["name"],
@@ -137,5 +144,5 @@ def to_simulation_request_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "horizon_years": 10,
         "extended_horizons": [20, 30],
         "request_notes": profile["question"],
-        "preferred_language": "zh",
+        "preferred_language": preferred_language,
     }

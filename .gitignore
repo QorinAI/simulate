@@ -3,3 +3,5 @@ __pycache__/
 .DS_Store
 data/index.jsonl
 data/runs/*.json
+data/simulate_life_engine.db
+data/simulate_life_runs/

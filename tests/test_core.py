@@ -1,10 +1,13 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from lifescope.core import build_life_reading, normalize_payload
 from lifescope.engine_mapper import to_simulation_request_payload
+from lifescope.engine_runner import run_reading, selected_engine
 from lifescope.storage import RunStore
 
 
@@ -83,6 +86,41 @@ class LifeScopeCoreTests(unittest.TestCase):
         self.assertEqual(payload["person"]["finance"]["risk_tolerance"], "high")
         self.assertEqual(payload["branch_count"], 3)
         self.assertEqual(len(payload["interventions"]), 2)
+        self.assertEqual(payload["preferred_language"], "en")
+
+    def test_engine_mapper_accepts_language_override(self):
+        payload = to_simulation_request_payload({"name": "Alex", "preferred_language": "zh"})
+
+        self.assertEqual(payload["preferred_language"], "zh")
+
+    def test_engine_mapper_allows_visible_language_override(self):
+        with mock.patch.dict(os.environ, {"LIFESCOPE_SIMULATE_LIFE_LANGUAGE": "zh"}):
+            payload = to_simulation_request_payload({"name": "Alex"})
+
+        self.assertEqual(payload["preferred_language"], "zh")
+
+    def test_engine_mapper_payload_matches_simulate_life_schema_when_available(self):
+        payload = to_simulation_request_payload({"name": "Alex", "age": 29})
+        try:
+            import sys
+
+            sys.path.insert(0, "/Users/wangyiqi/Desktop/code/simulate_life")
+            from simulated_life.models import SimulationRequest
+        except Exception:
+            self.skipTest("simulate_life package is not importable")
+
+        parsed = SimulationRequest.parse_obj(payload)
+        self.assertEqual(parsed.person.name, "Alex")
+        self.assertEqual(parsed.branch_count, 3)
+
+    def test_engine_selection_aliases_kimi_to_simulate_life(self):
+        self.assertEqual(selected_engine("kimi"), "simulate_life")
+        self.assertEqual(selected_engine("moonshot"), "simulate_life")
+        self.assertEqual(selected_engine("deterministic"), "deterministic")
+
+    def test_run_reading_keeps_deterministic_default(self):
+        reading = run_reading({"name": "Alex"}, engine="deterministic")
+        self.assertEqual(reading["engine"]["mode"], "deterministic")
 
 
 if __name__ == "__main__":

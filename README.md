@@ -19,6 +19,7 @@ http://127.0.0.1:8765/
 - Text/file intake for background and interests
 - Lightweight profile controls for risk, stability, mobility, focus, and what-if choices
 - Profile confirmation before generation
+- Runtime mode switch: deterministic draft or real `simulate_life` / Moonshot Kimi 2.5
 - Three branch cards with probability and confidence
 - A short path timeline
 - A trust surface with evidence, missing information, and rerun guidance
@@ -26,10 +27,10 @@ http://127.0.0.1:8765/
 
 ## What It Does Not Do Yet
 
-- It does not call Kimi or the Python simulation engine.
 - It does not store raw long-form user text by default.
 - It does not parse PDF/DOCX uploads.
 - It is not medical, legal, financial, or psychological advice.
+- It does not run the Kimi path asynchronously yet; real engine runs can take minutes.
 
 ## Local API
 
@@ -45,6 +46,20 @@ DELETE /api/runs/<run_id>
 ```
 
 `POST /api/engine-contract` maps the web intake into the future `simulate_life.SimulationRequest` shape.
+
+To run the real Kimi-backed engine from the web API:
+
+```bash
+LIFESCOPE_ENGINE=simulate_life python3 server.py
+```
+
+Or request it per call:
+
+```text
+POST /api/simulate?engine=simulate_life
+```
+
+The backend imports `/Users/wangyiqi/Desktop/code/simulate_life`, reads that repo's `.env`, uses `provider=moonshot`, and defaults to `model=kimi-k2.5`. Full engine artifacts are written under `data/simulate_life_runs/`, while the LifeScope run index stores only a redacted response snapshot. Web API calls default the upstream visible artifact language to English for synchronous response reliability; set `LIFESCOPE_SIMULATE_LIFE_LANGUAGE=zh` when you want the upstream Chinese report artifacts and can tolerate the longer localization path.
 
 ## Intended Next Step
 

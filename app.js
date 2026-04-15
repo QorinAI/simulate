@@ -3,6 +3,7 @@ const fileInput = document.querySelector("#profile-file");
 const fileName = document.querySelector("#file-name");
 const loadSample = document.querySelector("#load-sample");
 const backendStatus = document.querySelector("#backend-status");
+const engineStatus = document.querySelector("#engine-status");
 const resultPanel = document.querySelector("#result-panel");
 const reviewPanel = document.querySelector("#review-panel");
 const generateButton = document.querySelector("#generate-button");
@@ -17,6 +18,7 @@ const rerunList = document.querySelector("#rerun-list");
 const resultTitle = document.querySelector("#result-title");
 const resultSummary = document.querySelector("#result-summary");
 const confidenceValue = document.querySelector("#confidence-value");
+const resultEngine = document.querySelector("#result-engine");
 const profileSummary = document.querySelector("#profile-summary");
 const profileQuestion = document.querySelector("#profile-question");
 const profileMissing = document.querySelector("#profile-missing");
@@ -37,6 +39,7 @@ const sample = {
   mobility: "7",
   focus: "career",
   whatif: ["overseas", "startup"],
+  engine: "deterministic",
 };
 
 let backendAvailable = false;
@@ -88,6 +91,7 @@ function formData() {
     balance: Number(data.get("balance") || 5),
     mobility: Number(data.get("mobility") || 5),
     whatif: data.getAll("whatif"),
+    engine: String(data.get("engine") || "deterministic"),
     includeSensitive: Boolean(data.get("includeSensitive")),
     localOnly: Boolean(data.get("localOnly")),
   };
@@ -216,6 +220,11 @@ function localReading(profile) {
   return {
     run_id: `local-${Date.now()}`,
     source: "browser-local-fallback",
+    engine: {
+      mode: "deterministic",
+      provider: "browser",
+      model: "deterministic-web-mvp",
+    },
     profile,
     profile_review: {
       summary: `${profile.name}，${profile.age} 岁，当前在 ${profile.location}，身份是 ${profile.career}。`,
@@ -287,6 +296,7 @@ async function checkBackend() {
     backendAvailable = false;
   }
   backendStatus.textContent = backendAvailable ? "本地 API 已连接" : "浏览器本地模式";
+  updateEngineStatus(formData().engine);
 }
 
 async function getPreview(profile) {
@@ -303,7 +313,7 @@ async function getPreview(profile) {
 async function getReading(profile) {
   if (!backendAvailable) return localReading(profile);
   try {
-    return await apiJson("/api/simulate", profile);
+    return await apiJson(`/api/simulate?engine=${encodeURIComponent(profile.engine)}`, profile);
   } catch {
     backendAvailable = false;
     backendStatus.textContent = "浏览器本地模式";
@@ -327,6 +337,13 @@ function renderReading(reading) {
   resultTitle.textContent = oneScreen.title || `${currentProfile.name} 的三条可能人生`;
   resultSummary.textContent = oneScreen.summary || "路径会基于你提供的背景、兴趣、约束和 what-if 权重重新生成。";
   confidenceValue.textContent = `${oneScreen.confidence || 0}%`;
+  const engine = reading.engine || {};
+  const engineLabel =
+    engine.mode === "simulate_life"
+      ? `Kimi 2.5 (${engine.provider || "moonshot"})`
+      : "deterministic";
+  resultEngine.textContent = `本次使用：${engineLabel}`;
+  updateEngineStatus(engine.mode || currentProfile.engine);
 
   branchGrid.innerHTML = branches
     .map(
@@ -397,19 +414,27 @@ function renderReading(reading) {
 
 async function showLoading() {
   const stages = ["解析画像", "构建分支", "检查可信度", "组装结果"];
+  const isKimi = (currentProfile?.engine || "") === "simulate_life";
   resultPanel.setAttribute("aria-busy", "true");
   loadingPanel.hidden = false;
   generateButton.disabled = true;
+  generateButton.dataset.originalLabel = generateButton.textContent;
+  generateButton.textContent = isKimi ? "正在调用 Kimi 2.5..." : "正在生成...";
   for (const stage of stages) {
     loadingStage.textContent = stage;
-    await new Promise((resolve) => setTimeout(resolve, 180));
+    await new Promise((resolve) => setTimeout(resolve, isKimi ? 750 : 180));
   }
 }
 
 function hideLoading() {
   loadingPanel.hidden = true;
   generateButton.disabled = false;
+  generateButton.textContent = generateButton.dataset.originalLabel || "生成路径";
   resultPanel.setAttribute("aria-busy", "false");
+}
+
+function updateEngineStatus(engine) {
+  engineStatus.textContent = engine === "simulate_life" ? "Kimi 2.5" : "deterministic";
 }
 
 fileInput.addEventListener("change", () => {
@@ -428,6 +453,7 @@ fileInput.addEventListener("change", () => {
 
 form.addEventListener("input", (event) => {
   if (event.target.matches('input[type="range"]')) updateSliderOutputs();
+  if (event.target.matches('input[name="engine"]')) updateEngineStatus(event.target.value);
   setStep("intake");
 });
 

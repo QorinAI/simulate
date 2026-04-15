@@ -16,6 +16,7 @@
         <span>3 条路径</span>
         <span>证据层</span>
         <span id="backend-status">检测服务中</span>
+        <span id="engine-status">deterministic</span>
       </div>
     </header>
 
@@ -102,6 +103,14 @@
         <details class="assumptions" open>
           <summary>高级假设</summary>
           <fieldset>
+            <legend>运行模式</legend>
+            <div class="segmented engine-mode" role="group" aria-label="运行模式">
+              <label><input type="radio" name="engine" value="deterministic" checked />快速草稿</label>
+              <label><input type="radio" name="engine" value="simulate_life" />Kimi 2.5</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
             <legend>推演主题</legend>
             <div class="segmented" role="group" aria-label="推演主题">
               <label><input type="radio" name="focus" value="career" checked />职业</label>
@@ -184,6 +193,9 @@
         <section class="loading-panel" id="loading-panel" hidden>
           <p class="eyebrow">Generating</p>
           <h2 id="loading-stage">解析画像</h2>
+          <p id="loading-note" class="metric-note">
+            快速草稿通常立即完成；Kimi 2.5 运行通常需要几十秒到几分钟。
+          </p>
           <div class="loading-steps">
             <span>解析画像</span>
             <span>构建分支</span>
@@ -197,6 +209,7 @@
             <p class="eyebrow">One-Screen Answer</p>
             <h2 id="result-title">Alex 的三条可能人生</h2>
             <p id="result-summary">路径会基于你提供的背景、兴趣、约束和 what-if 权重重新生成。</p>
+            <span class="tag" id="result-engine">本次使用：deterministic</span>
           </div>
           <div class="confidence-gauge">
             <span id="confidence-value">72%</span>

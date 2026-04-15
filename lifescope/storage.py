@@ -101,6 +101,7 @@ class RunStore:
         if not path.exists():
             return False
         path.unlink()
+        self._remove_from_index(safe_name)
         return True
 
     def list_recent(self, limit: int = 20):
@@ -111,7 +112,34 @@ class RunStore:
             if not line.strip():
                 continue
             try:
-                rows.append(json.loads(line))
+                row = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            run_path = Path(row.get("path") or "")
+            if run_path.exists():
+                rows.append(row)
         return list(reversed(rows[-limit:]))
+
+    def _remove_from_index(self, run_id: str) -> None:
+        if not self.index_path.exists():
+            return
+        records = []
+        for line in self.index_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if record.get("run_id") != run_id:
+                records.append(record)
+        temp_path = self.index_path.with_suffix(".jsonl.tmp")
+        content = "".join(
+            json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n"
+            for record in records
+        )
+        temp_path.write_text(
+            content,
+            encoding="utf-8",
+        )
+        temp_path.replace(self.index_path)

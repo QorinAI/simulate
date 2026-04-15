@@ -15,15 +15,20 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import sys
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from lifescope.core import build_life_reading, normalize_payload
 from lifescope.engine_mapper import to_simulation_request_payload
+from lifescope.engine_runner import run_reading, selected_engine
 from lifescope.storage import RunStore
 
 
 ROOT = Path(__file__).resolve().parent
 STORE = RunStore(ROOT / "data")
+
+
+class JsonBodyError(ValueError):
+    pass
 
 
 class LifeScopeHandler(SimpleHTTPRequestHandler):
@@ -43,6 +48,7 @@ class LifeScopeHandler(SimpleHTTPRequestHandler):
                     "ok": True,
                     "service": "lifescope-web-mvp",
                     "storage": str(STORE.root),
+                    "default_engine": selected_engine(),
                 }
             )
             return
@@ -76,7 +82,10 @@ class LifeScopeHandler(SimpleHTTPRequestHandler):
     def do_POST(self):  # noqa: N802 - http.server API
         parsed = urlparse(self.path)
         if parsed.path == "/api/profile":
-            payload = self.read_json()
+            try:
+                payload = self.read_json_or_error()
+            except JsonBodyError:
+                return
             profile = normalize_payload(payload)
             preview = build_life_reading(profile)
             self.write_json(
@@ -89,13 +98,21 @@ class LifeScopeHandler(SimpleHTTPRequestHandler):
             )
             return
         if parsed.path in ("/api/simulate", "/api/intake"):
-            payload = self.read_json()
-            reading = build_life_reading(payload)
+            try:
+                payload = self.read_json_or_error()
+            except JsonBodyError:
+                return
+            params = parse_qs(parsed.query)
+            engine = (params.get("engine") or [payload.get("engine") or None])[0]
+            reading = run_reading(payload, engine=engine, progress_hook=self.progress_hook)
             reading["storage"] = STORE.save(reading)
             self.write_json(reading)
             return
         if parsed.path == "/api/engine-contract":
-            payload = self.read_json()
+            try:
+                payload = self.read_json_or_error()
+            except JsonBodyError:
+                return
             self.write_json(to_simulation_request_payload(payload))
             return
         self.send_error(HTTPStatus.NOT_FOUND, "Unknown endpoint")
@@ -109,7 +126,7 @@ class LifeScopeHandler(SimpleHTTPRequestHandler):
             return
         self.send_error(HTTPStatus.NOT_FOUND, "Unknown endpoint")
 
-    def read_json(self):
+    def read_json_or_error(self):
         length = int(self.headers.get("Content-Length", "0") or "0")
         if length <= 0:
             return {}
@@ -118,7 +135,7 @@ class LifeScopeHandler(SimpleHTTPRequestHandler):
             return json.loads(body.decode("utf-8"))
         except json.JSONDecodeError:
             self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
-            return {}
+            raise JsonBodyError("Invalid JSON")
 
     def write_json(self, payload, status=HTTPStatus.OK):
         body = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
@@ -128,6 +145,12 @@ class LifeScopeHandler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
+
+    def progress_hook(self, stage, message):
+        sys.stderr.write(
+            "[lifescope:engine:{stage}] {message}\n".format(stage=stage, message=message)
+        )
+        sys.stderr.flush()
 
 
 def main(argv=None):
