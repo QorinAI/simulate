@@ -16,6 +16,7 @@ What is proven:
 
 What is not beta-ready:
 
+- Chinese reports are not yet consistently fluent enough for invited users.
 - Kimi runs are synchronous and can block the HTTP request for minutes.
 - Progress is only server stderr plus frontend simulated loading, not real job state.
 - There is no cancellation, retry, resumable job status, auth, or per-user access control.
@@ -118,7 +119,7 @@ Beta means a real external tester can safely run a Kimi-backed life simulation w
 
 Beta must include:
 
-- Chinese reports that read naturally and preserve the intended meaning.
+- Chinese reports that read naturally, preserve meaning, and pass the lightweight fluency gate plus human review.
 - Background job execution for Kimi runs.
 - Real progress polling from server job state.
 - Cancel and retry.
@@ -163,6 +164,26 @@ Acceptance:
 - Page polls real job status.
 - Refresh can recover the job.
 - Failed jobs return a redacted error and preserve retry data.
+- Completed Chinese jobs show whether `report.md` and `visual_summary.md` passed the fluency gate.
+
+### Phase 1a: Chinese Report Fluency
+
+Goal: make the report readable enough that a Chinese-speaking tester trusts the product.
+
+Build:
+
+- Treat Chinese fluency as a product release gate, not copy polish.
+- Keep the lightweight artifact gate for `report.md` and `visual_summary.md`.
+- Add human review for live Chinese runs before beta.
+- Track examples of bad phrases and remove them from generation/localization prompts upstream.
+- Prefer Chinese-first visible writing over English-first report localization for user-facing reports.
+
+Acceptance:
+
+- No critical semantic breaks such as "诚实答案仍是拒绝", "报告能看到", or "树故意保持".
+- Branch sections include scene, rhythm, pressure, tradeoff, and landing.
+- First screen is readable in about 30 seconds.
+- At least 5 live Chinese runs pass human review before invite-only beta.
 
 ### Phase 2: Real Progress + Result Recovery
 
