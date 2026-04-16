@@ -19,6 +19,8 @@ const resultTitle = document.querySelector("#result-title");
 const resultSummary = document.querySelector("#result-summary");
 const confidenceValue = document.querySelector("#confidence-value");
 const resultEngine = document.querySelector("#result-engine");
+const qualityWarning = document.querySelector("#quality-warning");
+const qualityWarningText = document.querySelector("#quality-warning-text");
 const profileSummary = document.querySelector("#profile-summary");
 const profileQuestion = document.querySelector("#profile-question");
 const profileMissing = document.querySelector("#profile-missing");
@@ -334,6 +336,9 @@ function renderReading(reading) {
   const oneScreen = reading.one_screen || {};
   const branches = reading.branches || [];
   const trust = reading.trust || {};
+  const quality = reading.quality || {};
+  const chineseQuality = quality.chinese_artifacts || quality.chinese_report || {};
+  const betaBlockers = quality.beta_blockers || [];
   resultTitle.textContent = oneScreen.title || `${currentProfile.name} 的三条可能人生`;
   resultSummary.textContent = oneScreen.summary || "路径会基于你提供的背景、兴趣、约束和 what-if 权重重新生成。";
   confidenceValue.textContent = `${oneScreen.confidence || 0}%`;
@@ -409,7 +414,17 @@ function renderReading(reading) {
 
   renderList(evidenceList, trust.evidence || []);
   renderList(missingList, trust.missing || []);
-  renderList(rerunList, trust.rerun || []);
+  const rerunItems = [...(trust.rerun || [])];
+  if (betaBlockers.includes("chinese_report_fluency_not_beta_ready")) {
+    rerunItems.unshift(chineseQuality.summary || "中文报告还不够通顺，不能进入 beta。");
+    qualityWarning.hidden = false;
+    qualityWarningText.textContent =
+      chineseQuality.summary || "中文报告还不够通顺，不能进入 beta。";
+  } else {
+    qualityWarning.hidden = true;
+    qualityWarningText.textContent = "";
+  }
+  renderList(rerunList, rerunItems);
 }
 
 async function showLoading() {

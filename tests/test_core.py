@@ -86,7 +86,7 @@ class LifeScopeCoreTests(unittest.TestCase):
         self.assertEqual(payload["person"]["finance"]["risk_tolerance"], "high")
         self.assertEqual(payload["branch_count"], 3)
         self.assertEqual(len(payload["interventions"]), 2)
-        self.assertEqual(payload["preferred_language"], "en")
+        self.assertEqual(payload["preferred_language"], "zh")
 
     def test_engine_mapper_accepts_language_override(self):
         payload = to_simulation_request_payload({"name": "Alex", "preferred_language": "zh"})

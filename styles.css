@@ -421,6 +421,24 @@ input[type="range"] {
   display: none;
 }
 
+.quality-warning {
+  background: #fff5e6;
+  border: 1px solid #e0b96a;
+  border-radius: 8px;
+  margin: 0 0 18px;
+  padding: 16px;
+}
+
+.quality-warning[hidden] {
+  display: none;
+}
+
+.quality-warning p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
 .loading-panel h2 {
   margin-top: 6px;
 }

@@ -11,6 +11,10 @@ from typing import Any, Dict, List
 
 from lifescope.core import build_life_reading, normalize_payload
 from lifescope.engine_mapper import to_simulation_request_payload
+from lifescope.report_quality import (
+    inspect_markdown_artifact,
+    summarize_chinese_artifact_quality,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -240,6 +244,7 @@ def reading_from_simulation_artifacts(profile: Dict[str, Any], artifacts) -> Dic
     ]
     if not evidence:
         evidence = build_life_reading(profile)["trust"]["evidence"]
+    artifact_quality = inspect_report_artifacts(artifacts)
 
     return {
         "run_id": result.run_id,
@@ -273,6 +278,14 @@ def reading_from_simulation_artifacts(profile: Dict[str, Any], artifacts) -> Dic
             "advice_boundary": "不提供医疗、法律、投资或心理诊断建议。",
             "privacy_mode": "simulate_life_artifacts_written_locally",
         },
+        "quality": {
+            "chinese_artifacts": artifact_quality,
+            "beta_blockers": (
+                []
+                if artifact_quality.get("passed")
+                else ["chinese_report_fluency_not_beta_ready"]
+            ),
+        },
         "engine": {
             "mode": "simulate_life",
             "provider": result.provider,
@@ -284,3 +297,11 @@ def reading_from_simulation_artifacts(profile: Dict[str, Any], artifacts) -> Dic
             "dossier_path": str(artifacts.dossier_path),
         },
     }
+
+
+def inspect_report_artifacts(artifacts) -> Dict[str, object]:
+    checks = [
+        inspect_markdown_artifact(artifacts.report_path, "report.md"),
+        inspect_markdown_artifact(artifacts.visual_summary_path, "visual_summary.md"),
+    ]
+    return summarize_chinese_artifact_quality(checks)

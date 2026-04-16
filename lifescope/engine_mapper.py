@@ -90,7 +90,7 @@ def to_simulation_request_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     priorities = text_words(profile["interests"])[:8] or ["长期成长", "生活稳定", "选择权"]
     preferred_language = clean_text(
         payload.get("preferred_language"),
-        os.getenv("LIFESCOPE_SIMULATE_LIFE_LANGUAGE", "en"),
+        os.getenv("LIFESCOPE_SIMULATE_LIFE_LANGUAGE", "zh"),
     ).lower()
     if preferred_language not in ("en", "zh"):
         preferred_language = "en"

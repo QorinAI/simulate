@@ -16,7 +16,20 @@ It has moved past a static concept prototype because the web MVP can now:
 - persist a redacted LifeScope snapshot locally
 - produce upstream engine artifacts: `simulation.json`, `report.md`, `visual_summary.md`, and `analysis_dossier.json`
 
-It is **not beta-ready** because the real Kimi path is still a synchronous long request and the product does not yet have account ownership, background jobs, cancellation, full deletion of upstream artifacts, browser E2E coverage, or production privacy controls.
+It is **not beta-ready** because the Chinese report is not yet consistently fluent, the real Kimi path is still a synchronous long request, and the product does not yet have account ownership, background jobs, cancellation, full deletion of upstream artifacts, browser E2E coverage, or production privacy controls.
+
+## Build Path So Far
+
+Keep this path simple and update it after every meaningful product step:
+
+1. **Static product sketch**: a single-page website showed the intended intake, three-path result, timeline, and trust surface.
+2. **Profile review**: the flow added a checkpoint where users can see what the system understood before generation.
+3. **Deterministic draft**: the browser/backend can generate a fast local three-path reading without calling a model.
+4. **Backend API**: the local Python server added `/api/profile`, `/api/simulate`, `/api/runs`, and the engine contract endpoint.
+5. **Real Kimi path**: `/api/simulate?engine=simulate_life` can call the upstream `simulate_life` engine with Moonshot / Kimi 2.5.
+6. **Redacted storage**: LifeScope stores a lightweight run snapshot with raw long-form text replaced by redaction metadata.
+7. **Product documentation**: this status document and `docs/product.md` now track stage, blockers, gates, and next milestones.
+8. **Chinese quality gate**: Kimi-backed results now carry a lightweight Chinese report fluency check so a successful model run is not mistaken for a beta-ready report.
 
 ## Current Product Definition
 
@@ -82,6 +95,12 @@ Known successful live run:
   - `data/simulate_life_runs/run-20260415155731-0b049441/visual_summary.md`
   - `data/simulate_life_runs/run-20260415155731-0b049441/analysis_dossier.json`
 
+Known quality issue from existing runs:
+
+- Chinese `report.md` / `visual_summary.md` artifacts fail the lightweight fluency gate in existing local runs.
+- The issue is not just style polish. Phrases such as "诚实答案仍是拒绝", "报告能看到", "树故意保持", and "感觉被居住" make the report feel machine-translated and semantically unreliable.
+- Product rule: a completed Kimi run is only an engine success; it is not beta-ready until the Chinese user-facing artifacts are readable.
+
 ### Verification
 
 Current local verification:
@@ -94,12 +113,13 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 Current passing suite:
 
-- 19 tests
+- 23 tests
 - covers core branch generation
 - covers LifeScope storage redaction
 - covers server routes
 - covers engine aliasing and fallback
 - covers Kimi result mapping with fakes
+- covers Chinese artifact fluency gating
 - covers bad JSON response path
 
 ## Not Yet Validated
@@ -118,26 +138,51 @@ The following are product risks, not minor polish:
 
 Do not launch publicly until these are resolved:
 
-1. **Background job execution**
+1. **Chinese report fluency**
+   Chinese reports must read like natural Chinese. A report can be structurally correct and still fail the product if the wording is awkward, mixed-language, or semantically broken. Invite-only beta requires repeated Chinese runs that pass human review and the lightweight fluency gate.
+
+2. **Background job execution**
    Kimi runs can take minutes. `/api/simulate` must not block a request thread for public beta.
 
-2. **Progress and cancellation**
+3. **Progress and cancellation**
    Users need visible queued/running/done/failed states and a way to stop or retry.
 
-3. **Deletion semantics**
+4. **Deletion semantics**
    Current delete removes LifeScope local run snapshots, but upstream `simulate_life` artifacts under `data/simulate_life_runs/` must also be deleted or governed by a retention policy.
 
-4. **User ownership**
+5. **User ownership**
    There is no account/session owner check. Any multi-user deployment needs access control before storing life data.
 
-5. **Privacy controls**
+6. **Privacy controls**
    Need explicit retention copy, upload limits, log policy, data deletion, and sensitive-field consent separation.
 
-6. **Browser E2E**
+7. **Browser E2E**
    Current verification is API/Python focused. Need browser tests for intake, confirmation, Kimi mode loading, result rendering, rerun, and delete.
 
-7. **Content QA**
+8. **Content QA**
    Need repeated live runs across thin/rich profiles, Chinese/English, sensitive/low-sensitive inputs, and different what-if combinations.
+
+## Chinese Report Quality Bar
+
+This product is a report-reading product. If the Chinese is not smooth, the product fails even when the Kimi run succeeds.
+
+For beta, a Chinese report must:
+
+- sound like it was written directly in Chinese, not translated from English
+- avoid stiff phrases such as "这版推演看到的"
+- avoid semantic breaks such as "诚实答案仍是拒绝", "报告能看到", and "树故意保持"
+- explain life paths in plain sentences, not internal memo language
+- make each branch concrete: life scene, weekly rhythm, pressure point, tradeoff, and landing
+- keep English words to approved product terms only
+- make the first screen understandable in about 30 seconds
+- pass at least one human Chinese-readability review before being shown to invited testers
+
+Current automated guardrail:
+
+- Kimi-backed responses include a lightweight Chinese artifact fluency check.
+- The check inspects `report.md` and `visual_summary.md`.
+- A failed check adds `chinese_report_fluency_not_beta_ready` to `quality.beta_blockers`.
+- This check is only a guardrail. It does not replace human review.
 
 ## Product Metrics For Alpha
 
@@ -147,6 +192,7 @@ For the next internal-alpha round, track:
 - profile-confirmation edit rate
 - Kimi generation completion rate
 - average Kimi run time
+- Chinese report fluency pass rate
 - first-screen comprehension score from interviews
 - percent of users who say “this feels like me”
 - percent who expand trust surface
@@ -168,16 +214,17 @@ Next milestone: **invite-only beta readiness**.
 
 Required work:
 
-1. Convert synchronous Kimi execution into background jobs.
-2. Add job status endpoints: queued, running, completed, failed, cancelled.
-3. Add frontend polling and long-task progress.
-4. Make profile confirmation editable in place.
-5. Add run history and rerun-from-previous-result.
-6. Extend delete to cover LifeScope snapshots and upstream engine artifacts.
-7. Add basic session ownership.
-8. Add browser E2E tests.
-9. Run 5 repeated live Kimi cases and review artifacts.
-10. Interview at least 5 alpha users before adding monetization.
+1. Fix Chinese report fluency enough that reports are understandable, natural, and accurate.
+2. Convert synchronous Kimi execution into background jobs.
+3. Add job status endpoints: queued, running, completed, failed, cancelled.
+4. Add frontend polling and long-task progress.
+5. Make profile confirmation editable in place.
+6. Add run history and rerun-from-previous-result.
+7. Extend delete to cover LifeScope snapshots and upstream engine artifacts.
+8. Add basic session ownership.
+9. Add browser E2E tests.
+10. Run 5 repeated live Kimi cases and review artifacts.
+11. Interview at least 5 alpha users before adding monetization.
 
 ## Release Gates
 
@@ -199,6 +246,7 @@ Status: **not met**.
 
 Gates:
 
+- Chinese reports pass human review for fluency and meaning.
 - background Kimi jobs
 - progress and retry
 - delete/retention model
@@ -230,7 +278,7 @@ Keep this document updated whenever one of these changes:
 - privacy/data retention policy
 - alpha/beta metrics
 - evidence from live runs
+- Chinese report quality findings
 - launch blockers
 
 Update cadence during active build: after every meaningful product commit or live user test.
-

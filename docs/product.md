@@ -4,7 +4,7 @@ Last updated: 2026-04-16
 
 ## 1. Product Stage
 
-LifeScope is currently in **technical alpha / product prototype**.
+LifeScope is currently in **working alpha**.
 
 What is proven:
 
@@ -22,7 +22,21 @@ What is not beta-ready:
 - The UI exposes only a simplified projection of engine artifacts.
 - Privacy controls are MVP-level and local, not production-grade.
 
-PM read: the product has crossed from "mockup" to **working alpha** because it can call Kimi 2.5 end to end. It has not crossed into beta because real users need reliable job handling, safer data boundaries, and clearer result review surfaces.
+PM read: the product has crossed from "mockup" to **working alpha** because it can call Kimi 2.5 end to end. It has not crossed into beta because Chinese reports are not yet consistently fluent, and real users still need reliable job handling, safer data boundaries, and clearer result review surfaces.
+
+### Build Path So Far
+
+The product has been built in this order:
+
+1. A static web sketch proved the intended flow.
+2. A profile review step made the system's understanding visible before generation.
+3. A deterministic draft made the three-path experience fast and cheap to test.
+4. A local Python API connected the page to backend routes.
+5. The backend mapped web intake into the upstream `simulate_life` request shape.
+6. The real Moonshot / Kimi 2.5 path ran end to end and produced artifacts.
+7. Redacted local storage kept the lightweight LifeScope snapshot safer for internal testing.
+8. Product docs now track the stage, release gates, and current blockers.
+9. A lightweight Chinese fluency gate now marks Kimi-backed reports that are not readable enough for beta.
 
 ## 2. Product Promise
 
@@ -104,6 +118,7 @@ Beta means a real external tester can safely run a Kimi-backed life simulation w
 
 Beta must include:
 
+- Chinese reports that read naturally and preserve the intended meaning.
 - Background job execution for Kimi runs.
 - Real progress polling from server job state.
 - Cancel and retry.
@@ -127,6 +142,8 @@ Beta does not require:
 ## 6. Beta Roadmap
 
 ### Phase 1: Job System
+
+Before or alongside this phase, fix the Chinese report quality bar. Invite-only beta cannot start if the report is hard to read in Chinese.
 
 Goal: replace synchronous `/api/simulate?engine=simulate_life` with a safe long-running job flow.
 
@@ -241,6 +258,7 @@ Product signal:
 
 Quality signal:
 
+- Chinese reports are natural, coherent, and not mixed-language.
 - Three branches are meaningfully different in user review.
 - Result names concrete tradeoffs, not generic advice.
 - Uncertainty is visible and understandable.
@@ -258,6 +276,7 @@ Operational signal:
 
 Product risks:
 
+- Chinese output may be technically complete but too awkward to trust.
 - Users may feel the output is long but not personal.
 - Users may interpret probabilities as destiny.
 - Users may not trust the system unless evidence and uncertainty are clear.
