@@ -2,7 +2,7 @@
 
 This is a zero-dependency MVP sketch for the Simulated Life website direction.
 
-Product status and PM guidance live in [`docs/product.md`](docs/product.md).
+Current product status: **internal alpha**. See [docs/product_status.md](docs/product_status.md) for the maintained PM status, release gates, validation evidence, and next milestone. Product guidance lives in [docs/product.md](docs/product.md).
 
 Open `index.html` in a browser for local-only fallback mode, or run the Python server for API-backed mode:
 
@@ -65,13 +65,14 @@ The backend imports `/Users/wangyiqi/Desktop/code/simulate_life`, reads that rep
 
 ## Intended Next Step
 
-Wrap the existing Python engine in a small web backend:
+Make the Kimi-backed path beta-safe as a long-running operation:
 
-1. web intake to friendly `UserLifeProfile`
-2. user confirmation screen
-3. mapper to the existing `SimulationRequest`
-4. background `run_simulation(...)`
-5. result page using `simulation.json`, `report.md`, `visual_summary.md`, and `analysis_dossier.json`
+1. create persisted job records for Kimi runs
+2. move `run_simulation(...)` behind a background worker
+3. expose job status, retry, and cancel endpoints
+4. poll real progress from the frontend
+5. bind jobs/runs to a session before inviting external testers
+6. extend delete behavior to linked `simulate_life` artifacts
 
 ## Verification
 
