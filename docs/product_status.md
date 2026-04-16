@@ -30,6 +30,7 @@ Keep this path simple and update it after every meaningful product step:
 6. **Redacted storage**: LifeScope stores a lightweight run snapshot with raw long-form text replaced by redaction metadata.
 7. **Product documentation**: this status document and `docs/product.md` now track stage, blockers, gates, and next milestones.
 8. **Chinese quality gate**: Kimi-backed results now carry a lightweight Chinese report fluency check so a successful model run is not mistaken for a beta-ready report.
+9. **LifeScope short report**: the web layer now writes a shorter Chinese report from structured results under `data/lifescope_reports/`, so alpha users are not forced to read the upstream localized long report first.
 
 ## Current Product Definition
 
@@ -79,6 +80,7 @@ The first alpha cohort should be invite-only and recruited from users who are wi
 - The deterministic path remains available for local demos and fallback.
 - Web intake can be mapped into the existing `simulate_life.SimulationRequest` shape.
 - Redacted LifeScope snapshots are stored locally; raw long-form fields are replaced in the lightweight LifeScope store.
+- Kimi-backed runs can produce a LifeScope-owned short Chinese report for alpha review, separate from upstream engine artifacts.
 
 ### Live Evidence
 
@@ -183,6 +185,7 @@ Current automated guardrail:
 - The check inspects `report.md` and `visual_summary.md`.
 - A failed check adds `chinese_report_fluency_not_beta_ready` to `quality.beta_blockers`.
 - This check is only a guardrail. It does not replace human review.
+- When upstream Chinese artifacts fail, the LifeScope short report may still be useful for alpha review, but it does not clear the beta blocker by itself.
 
 ## Product Metrics For Alpha
 

@@ -13,6 +13,7 @@ What is proven:
 - The backend can run both a deterministic draft and the real `simulate_life` Moonshot / Kimi 2.5 engine.
 - The real engine writes upstream artifacts: `simulation.json`, `report.md`, `visual_summary.md`, and `analysis_dossier.json`.
 - Local persistence stores a redacted response snapshot rather than raw long-form user text by default.
+- The web layer can render a shorter LifeScope-owned Chinese report from structured results for alpha review.
 
 What is not beta-ready:
 
@@ -120,6 +121,7 @@ Beta means a real external tester can safely run a Kimi-backed life simulation w
 Beta must include:
 
 - Chinese reports that read naturally, preserve meaning, and pass the lightweight fluency gate plus human review.
+- A clear distinction between the user-facing LifeScope short report and upstream internal artifacts.
 - Background job execution for Kimi runs.
 - Real progress polling from server job state.
 - Cancel and retry.

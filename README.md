@@ -2,7 +2,7 @@
 
 This is a zero-dependency MVP sketch for the Simulated Life website direction.
 
-Current product status: **internal alpha**. The product can run deterministic drafts and real Kimi 2.5 simulations, but it is not beta-ready yet. See [docs/product_status.md](docs/product_status.md) for the maintained PM status and [docs/product.md](docs/product.md) for product direction.
+Current product status: **internal alpha**. The product can run deterministic drafts and real Kimi 2.5 simulations, but it is not beta-ready yet. See [docs/product_status.md](docs/product_status.md) for the maintained PM status, [docs/product.md](docs/product.md) for product direction, and [docs/pm_handoff.md](docs/pm_handoff.md) for the handoff brief.
 
 Open `index.html` in a browser for local-only fallback mode, or run the Python server for API-backed mode:
 
@@ -23,6 +23,7 @@ http://127.0.0.1:8765/
 - Profile confirmation before generation
 - Runtime mode switch: deterministic draft or real `simulate_life` / Moonshot Kimi 2.5
 - Lightweight Chinese report fluency gate for Kimi-backed artifacts
+- LifeScope-owned short Chinese report rendered from structured results
 - Three branch cards with probability and confidence
 - A short path timeline
 - A trust surface with evidence, missing information, and rerun guidance
@@ -64,6 +65,8 @@ POST /api/simulate?engine=simulate_life
 ```
 
 The backend imports `/Users/wangyiqi/Desktop/code/simulate_life`, reads that repo's `.env`, uses `provider=moonshot`, and defaults to `model=kimi-k2.5`. Full engine artifacts are written under `data/simulate_life_runs/`, while the LifeScope run index stores only a redacted response snapshot. Web API calls default upstream visible artifacts to Chinese; set `LIFESCOPE_SIMULATE_LIFE_LANGUAGE=en` if you need the faster English artifact path for debugging.
+
+Because the upstream localized Chinese report can still read awkwardly, the web layer also writes a shorter LifeScope-owned Chinese report under `data/lifescope_reports/`. Treat the upstream report as an internal artifact until repeated Chinese quality reviews pass.
 
 ## Intended Next Step
 

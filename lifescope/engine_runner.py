@@ -15,6 +15,7 @@ from lifescope.report_quality import (
     inspect_markdown_artifact,
     summarize_chinese_artifact_quality,
 )
+from lifescope.report_renderer import write_lifescope_chinese_report
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -246,7 +247,7 @@ def reading_from_simulation_artifacts(profile: Dict[str, Any], artifacts) -> Dic
         evidence = build_life_reading(profile)["trust"]["evidence"]
     artifact_quality = inspect_report_artifacts(artifacts)
 
-    return {
+    reading = {
         "run_id": result.run_id,
         "created_at": result.generated_at,
         "source": "simulate_life",
@@ -297,6 +298,12 @@ def reading_from_simulation_artifacts(profile: Dict[str, Any], artifacts) -> Dic
             "dossier_path": str(artifacts.dossier_path),
         },
     }
+    lifescope_report_path = write_lifescope_chinese_report(
+        reading,
+        PROJECT_ROOT / "data" / "lifescope_reports",
+    )
+    reading["engine"]["lifescope_report_path"] = lifescope_report_path
+    return reading
 
 
 def inspect_report_artifacts(artifacts) -> Dict[str, object]:

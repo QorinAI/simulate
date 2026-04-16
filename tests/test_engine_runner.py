@@ -134,6 +134,7 @@ class EngineRunnerTests(unittest.TestCase):
         self.assertEqual(reading["one_screen"]["summary"], "Kimi 生成的结构化基线摘要。")
         self.assertTrue(reading["quality"]["chinese_artifacts"]["passed"])
         self.assertEqual(reading["quality"]["beta_blockers"], [])
+        self.assertIn("lifescope_report_path", reading["engine"])
 
     def test_reading_marks_unfluent_chinese_report_as_beta_blocker(self):
         branch = SimpleNamespace(
@@ -197,6 +198,7 @@ class EngineRunnerTests(unittest.TestCase):
         self.assertFalse(reading["quality"]["chinese_artifacts"]["passed"])
         self.assertEqual(reading["quality"]["chinese_artifacts"]["failed_artifacts"], ["report.md"])
         self.assertIn("chinese_report_fluency_not_beta_ready", reading["quality"]["beta_blockers"])
+        self.assertIn("lifescope_report_path", reading["engine"])
 
 
 if __name__ == "__main__":
