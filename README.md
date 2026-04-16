@@ -2,6 +2,8 @@
 
 This is a zero-dependency MVP sketch for the Simulated Life website direction.
 
+Product status and PM guidance live in [`docs/product.md`](docs/product.md).
+
 Open `index.html` in a browser for local-only fallback mode, or run the Python server for API-backed mode:
 
 ```bash
@@ -70,6 +72,10 @@ Wrap the existing Python engine in a small web backend:
 3. mapper to the existing `SimulationRequest`
 4. background `run_simulation(...)`
 5. result page using `simulation.json`, `report.md`, `visual_summary.md`, and `analysis_dossier.json`
+
+## Product Document
+
+The living PM document is maintained at [`docs/product.md`](docs/product.md). It records the current product stage, beta definition, roadmap, metrics, and privacy/technical risks.
 
 ## Verification
 
