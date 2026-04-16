@@ -73,10 +73,6 @@ Wrap the existing Python engine in a small web backend:
 4. background `run_simulation(...)`
 5. result page using `simulation.json`, `report.md`, `visual_summary.md`, and `analysis_dossier.json`
 
-## Product Document
-
-The living PM document is maintained at [`docs/product.md`](docs/product.md). It records the current product stage, beta definition, roadmap, metrics, and privacy/technical risks.
-
 ## Verification
 
 ```bash
